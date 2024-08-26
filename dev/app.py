@@ -29,6 +29,7 @@ st.set_page_config(
     }
 )
  
+<<<<<<< HEAD
 def validar_y_actualizar(fila):
     if  fila["cantidad_unid"] >= 1:
         if (fila['id_item'] == 13887): #JERINGA MEGA INSUL 1MLx29Gx1/2x100
@@ -43,16 +44,67 @@ def validar_y_actualizar(fila):
        
         elif(fila['id_item'] == 88275): #MICARDIX
             fila['cantidad_frac'] += (28 * int(fila["cantidad_unid"]))
+=======
+ 
+ 
+provincias_y_ciudades = {
+    'Guayas': ['crnel. marcelino maridueña', 'alfredo baquerizo moreno (jujan)', 'duran', 'gnral. antonio elizalde', 'lomas de sargentillo', 'playas', 'samborondon', 'santa lucia', 'simon bolivar', 'Guayaquil', 'Durán', 'Daule', 'Milagro', 'Samborondón', 'Velasco Ibarra', 'Naranjal', 'Balzar', 'El Triunfo', 'Yaguachi', 'Pedro Carbo', 'Salitre', 'Alfredo Baquerizo Moreno', 'Naranjito', 'San Miguel', 'Píllaro', 'Simón Bolívar', 'Santa Lucía', 'Balao', 'Palestina', 'Narcisa de Jesús', 'Colimes', 'El Empalme', 'Isidro Ayora', 'Nobol', 'San Jacinto de Yaguachi'],
+    'Pichincha': ['mejia', 'Quito', 'Sangolquí', 'Cayambe', 'Pedro Vicente Maldonado', 'Puerto Quito', 'Machachi', 'Tabacundo', 'Mejía', 'Pedro Moncayo', 'Rumiñahui', 'San Miguel de Los Bancos'],
+    'Azuay': ['camilo ponce enriquez', 'giron', 'Cuenca', 'Gualaceo', 'Paute', 'Chordeleg', 'Camilo Ponce Enríquez', 'Nabón', 'Guachapala', 'Pucará', 'San Fernando', 'Sevilla de Oro', 'El Pan', 'Girón', 'Oña', 'Las Lajas', 'Santa Isabel'],
+    'Sto. Domingo': ['santo domingo de los tsachilas', 'Santo Domingo', 'La Concordia'],
+    'El Oro': ['marcabeli', 'Machala', 'Pasaje', 'Santa Rosa', 'Huaquillas', 'Piñas', 'El Guabo', 'Arenillas', 'Balsas', 'Marcabelí', 'Portovelo', 'Zaruma', 'Las Naves', 'Atahualpa', 'Chilla'],
+    'Manabí': ['jaramijo', 'junin', 'pajan', 'puerto lopez', 'Manta', 'Portoviejo', 'Montecristi', 'Chone', 'El Carmen', 'Jipijapa', 'Rocafuerte', 'Santa Ana', 'San Vicente', 'Olmedo', 'Paján', 'Sucre', 'Bahía de Caráquez', 'Jaramijó', 'Pedernales', 'Puerto López', 'Jama', '24 de Mayo', 'Bolívar', 'Chinchipe', 'Flavio Alfaro', 'Junín', 'Pichincha', 'Paján', 'Puerto López', 'Tosagua'],
+    'Loja': ['espindola', 'gonzanama', 'macara', 'saraguro', 'sigsig', 'Loja', 'Catamayo', 'Macará', 'Cariamanga', 'Zapotillo', 'Celica', 'Chaguarpamba', 'Pindal', 'Alamor', 'Quilanga', 'Sozoranga', 'Calvas', 'Espíndola', 'Gonzanamá', 'Paltas', 'Puyango'],
+    'Los Ríos': ['urdaneta', 'Quevedo', 'Babahoyo', 'Ventanas', 'Buena Fe', 'Vinces', 'Valencia', 'Montalvo', 'Mocache', 'Palenque', 'Catarama', 'Quinsaloma', 'Puebloviejo', 'Baba'],
+    'Tungurahua': ['santiago de pillaro', 'Ambato', 'Baños de Agua Santa', 'Pelileo', 'Cevallos', 'Mocha', 'Patate', 'Quero', 'San Pedro de Pelileo', 'Santiago de Píllaro', 'Tisaleo'],
+    'Chimborazo': ['cumanda', 'alausi', 'Riobamba', 'Guamote', 'Chambo', 'Chunchi', 'Guano', 'Pallatanga', 'Penipe', 'Cumandá', 'Alausí', 'Colta'],
+    'Esmeraldas': ['quininde', 'Esmeraldas', 'Rosa Zárate', 'San Lorenzo', 'Atacames', 'Muisne', 'Rioverde', 'Eloy Alfaro', 'Quinindé'],
+    'Cotopaxi': ['la mana', 'pujili', 'saquisili', 'Latacunga', 'La Maná', 'Pujilí', 'Sigchos', 'Saquisilí', 'Pangua', 'Salcedo'],
+    'Imbabura': ['san miguel de urcuqui', 'Ibarra', 'Otavalo', 'Cotacachi', 'Pimampiro', 'Urcuquí', 'Atuntaqui', 'Antonio Ante', 'San Miguel de Urcuquí'],
+    'Santa Elena': ['La Libertad', 'Santa Elena', 'Salinas', 'Salinas (Salinas, Cab. Cantonal)'],
+    'Carchi': ['bolivar', 'montufar', 'tulcan', 'Tulcán', 'San Gabriel', 'Huaca', 'Bolívar', 'Mira', 'Espejo', 'Montúfar', 'San Pedro de Huaca'],
+    'Sucumbíos': ['sucumbios', 'Nueva Loja', 'Shushufindi', 'Cascales', 'Cuyabeno', 'Gonzalo Pizarro', 'Putumayo', 'Sucumbíos', 'Lago Agrio'],
+    'Pastaza': ['pastaza', 'Puyo', 'Mera', 'Santa Clara', 'Arajuno'],
+    'Orellana': ['El Coca', 'La Joya de los Sachas', 'Aguarico', 'Loreto', 'Puerto Francisco de Orellana'],
+    'Morona Santiago': ['limon indanza', 'sucua', 'Macas', 'Gualaquiza', 'Morona', 'Palora', 'Sucúa', 'Logroño', 'Santiago', 'Taisha', 'Huamboya', 'San Juan Bosco', 'Limón Indanza', 'Pablo Sexto', 'Tiwintza'],
+    'Zamora Chinchipe': ['centinela del condor', 'Zamora', 'Yantzaza', 'El Pangui', 'Yacuambi', 'Centinela del Cóndor', 'Nangaritza', 'Paquisha', 'Chinchipe', 'Palanda'],
+    'Cañar': ['biblian', 'deleg', 'nabon', 'pucara', 'Azogues', 'La Troncal', 'Biblián', 'Déleg', 'Suscal', 'Biblían', 'Cañar', 'El Tambo'],
+    'Napo': ['Tena', 'Archidona', 'Carlos Julio Arosemena Tola', 'El Chaco', 'Quijos'],
+    'Bolívar': ['echeandia', 'Guaranda', 'Chillanes', 'Echeandía', 'San Miguel', 'Chimbo', 'Caluma', 'Echeandía'],
+    'Galápagos': ['san cristobal', 'Puerto Baquerizo Moreno', 'Puerto Ayora', 'Puerto Villamil', 'Isabela', 'San Cristóbal', 'Santa Cruz'],
+}
+ 
+def validar_y_actualizar(fila):
+    if  fila["cantidad_unid"] >= 1:
+        if (fila['id_item'] == 13887): #JERINGA MEGA INSUL 1MLx29Gx1/2x100
+            fila["cantidad_frac"] += 100 * int(fila["cantidad_unid"])
+            #datos = datos = datos.rename(columns={'cantidad_unid': 'cantidad_frac'})
+            #fila["cantidad_unid"] = 0
+        elif fila['id_item'] in {90765, 79680, 27112, 1669, 101609}: #x'unidad  
+            fila["cantidad_frac"] += int(fila["cantidad_unid"])
+ 
+        elif(fila['id_item'] == 54122): #XARELTO COM-RECx10MGx10
+            fila["cantidad_frac"] += 10 * int(fila["cantidad_unid"])
+       
+        elif(fila['id_item'] == 88275): #MICARDIX
+            fila['cantidad_frac'] += 28 * int(fila["cantidad_unid"])
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
     return fila  
  
 # Preparar los datos
 # Preparar los datos
 def preparar_datos(datos):
+<<<<<<< HEAD
     # Reemplazar '#N/D' con NaN para unificar el manejo de valores faltantes
     datos.replace('#N/D', np.nan, inplace=True)
     
     # Seleccionar columnas específicas
     columnas_especificas = ['Fecha', 'id_item', 'cantidad_unid', 'cantidad_frac', 'provincia', 'latitud', 'longitud']
+=======
+ 
+    # Seleccionar columnas específicas
+    columnas_especificas = ['Fecha','id_item','cantidad_unid','cantidad_frac','provincia', 'latitud', 'longitud']
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
     datos = datos[columnas_especificas]
  
     # Aplicar la función a cada fila
@@ -63,6 +115,7 @@ def preparar_datos(datos):
     datos['Fecha'] = pd.to_datetime(datos['Fecha'], format='%d/%m/%Y %H:%M')
     # Establecer la hora y el minuto a 0
     datos['Fecha'] = datos['Fecha'].apply(lambda dt: dt.replace(hour=0, minute=0, second=0))
+<<<<<<< HEAD
     
     # Reemplazar NaN en las columnas con valores predeterminados
     datos['provincia'].fillna('Desconocido', inplace=True)
@@ -121,6 +174,18 @@ def preparar_datos1(datos):
     return datos
 
 
+=======
+ 
+    # Agrupar por Fecha e id_item y sumar cantidad_frac
+    datos = datos.groupby(['Fecha', 'id_item', 'provincia', 'latitud', 'longitud'], as_index=False).sum()
+ 
+    # Ordenar el dataset por Fecha
+    datos.sort_index(inplace=False)
+    #datos = datos.set_index('Fecha')
+ 
+    return datos
+ 
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
 # Definir la función de pérdida RMSE
 def root_mean_squared_error(y_true, y_pred):
     return tf.math.sqrt(tf.math.reduce_mean(tf.square(y_pred - y_true)))
@@ -192,6 +257,10 @@ def generar_predicciones_futuras(df, id_item, input_length, num_predicciones):
 # Ejecutar todo el proceso para todos los id_item
 def predecir_para_todos_los_items(datos, input_length, num_predicciones, lista):
     resultados_totales = pd.DataFrame()
+<<<<<<< HEAD
+=======
+    lista = [90765, 27112, 13887, 79680, 1669, 101609, 54122, 88275]
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
 
     for id_item in lista:
         # Filtrar los datos para el id_item actual
@@ -320,6 +389,7 @@ def mostrar_ventas_futuras(datos, id_item):
     
     # Renderizar el gráfico con st_echarts
     st_echarts(options=options, height="400px")
+<<<<<<< HEAD
 
 def mostrar_ventas_futuras_todos_items(datos):
     import pandas as pd
@@ -471,8 +541,76 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
     datos_abastecimiento = datos_abastecimiento.drop(columns=["latitud", "longitud","id_item",'provincia'])
     datos_predicciones = datos_predicciones.drop(columns=["Día","id_item"])
    
+=======
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
 
+def mostrar_ventas_futuras_todos_items(datos):
+    import pandas as pd
+    from streamlit_echarts import st_echarts
+    
+    # Verificar que la columna 'Fecha' sea de tipo datetime
+    if not pd.api.types.is_datetime64_any_dtype(datos['Fecha']):
+        datos['Fecha'] = pd.to_datetime(datos['Fecha'])
+    
+    # Añadir una columna para el día de la semana en español
+    dias_semana_es = {
+        'Monday': 'Lunes',
+        'Tuesday': 'Martes',
+        'Wednesday': 'Miércoles',
+        'Thursday': 'Jueves',
+        'Friday': 'Viernes',
+        'Saturday': 'Sábado',
+        'Sunday': 'Domingo'
+    }
+    datos['Día'] = datos['Fecha'].dt.day_name().map(dias_semana_es)
+    
+    # Crear una lista para almacenar las series de datos para cada item
+    series = []
+    
+    for id_item in datos['id_item'].unique():
+        # Filtrar los datos para el id_item específico
+        datos_item = datos[datos['id_item'] == id_item]
+        
+        # Ordenar los datos según la fecha para mantener coherencia visual
+        datos_item = datos_item.sort_values(by='Fecha')
+        
+        # Añadir los datos del item a la lista de series
+        series.append({
+            "name": f"Item {id_item}",
+            "data": datos_item['Predicción'].tolist(),  # Predicciones diarias
+            "type": "line",
+            "smooth": True,
+            "lineStyle": {"width": 2},
+            "areaStyle": {"opacity": 0.2},
+        })
+    
+    # Configurar las opciones para el gráfico
+    options = {
+        "title": {
+            "text": "Predicción de Ventas por Día",
+            "left": "center"
+        },
+        "tooltip": {
+            "trigger": "axis"
+        },
+        "legend": {
+            "data": [f"Item {id_item}" for id_item in datos['id_item'].unique()],
+            "top": "bottom"
+        },
+        "xAxis": {
+            "type": "category",
+            "data": datos_item['Día'].tolist(),  # Usar los días presentes en los datos
+            "axisLabel": {"rotate": 45}
+        },
+        "yAxis": {"type": "value", "name": "Ventas Predichas"},
+        "series": series,
+        "color": ["#4E79A7", "#59A14F", "#9C755F", "#E15759", "#F28E2B", "#76B7B2", "#EDC948", "#B07AA1", "#FF9DA7", "#9D7660"]
+    }
+    
+    # Renderizar el gráfico con st_echarts
+    st_echarts(options=options, height="500px")
 
+<<<<<<< HEAD
     datos_ventas = datos_ventas.groupby(['Fecha'], as_index=False).sum()
     datos_abastecimiento = datos_abastecimiento.groupby(['Fecha'], as_index=False).sum()
     datos_predicciones = datos_predicciones.groupby(['Fecha'], as_index=False).sum()
@@ -567,6 +705,204 @@ def calcular_kpis_y_mostrar(datos_ventas, datos_abastecimiento, datos_prediccion
     import streamlit as st
     from streamlit_echarts import st_echarts
     
+=======
+def pydeck_ecuador_barra(datos2, col):
+   
+    # Crear el DataFrame para el mapa utilizando las columnas de latitud y longitud
+    map_data = datos2[['latitud', 'longitud', 'cantidad_frac']].copy()
+    map_data = map_data.rename(columns={'latitud': 'lat', 'longitud': 'lon', 'cantidad_frac': 'elevation'})
+    # Filtrar valores inválidos (#N/D) y convertir a float
+    map_data = map_data.replace('#N/D', float('nan'))
+    map_data = map_data.dropna(subset=['lat', 'lon'])  # Eliminar filas con valores NaN
+    map_data['lat'] = map_data['lat'].astype(float)
+    map_data['lon'] = map_data['lon'].astype(float)
+    # Configuración del mapa centrado en Ecuador
+    view_state = pdk.ViewState(latitude=-1.831239, longitude=-78.183406, zoom=6, bearing=0, pitch=45)
+    # Capa de columnas 3D
+    column_layer = pdk.Layer(
+    "ColumnLayer",
+    map_data,
+    get_position=["lon", "lat"],
+    get_elevation="elevation",
+    radius=10000,  # Puedes ajustar el radio según la densidad de datos
+    elevation_scale=100,  # Ajusta la escala de elevación para mejor visualización
+    get_fill_color=[0, 128, 255],)
+    # Crear el mapa y mostrarlo en Streamlit
+    r = pdk.Deck(layers=[column_layer], initial_view_state=view_state)
+    col.pydeck_chart(r)
+ 
+@st.cache_data
+def cargar_datos_geojson():
+    # Cargar el archivo GeoJSON
+    geojson_file = 'provinces.geojson'
+    return gpd.read_file(geojson_file)
+ 
+@st.cache_data
+def contar_provincias(df, items_seleccionados):
+    # Filtrar el DataFrame según los items seleccionados
+    df_filtrado = df[df['id_item'].isin(items_seleccionados)]
+    return df_filtrado.groupby('provincia').size().reset_index(name='Valor')
+ 
+def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
+    heatmap = alt.Chart(input_df).mark_rect().encode(
+        y=alt.Y(f'{input_y}:O', axis=alt.Axis(title="Year", titleFontSize=18, titlePadding=15, titleFontWeight=900, labelAngle=0)),
+        x=alt.X(f'{input_x}:O', axis=alt.Axis(title="", titleFontSize=18, titlePadding=15, titleFontWeight=900)),
+        color=alt.Color(f'max({input_color}):Q',
+                        legend=None,
+                        scale=alt.Scale(scheme=input_color_theme)),
+        stroke=alt.value('black'),
+        strokeWidth=alt.value(0.25),
+    ).properties(width=900).configure_axis(
+        labelFontSize=12,
+        titleFontSize=12
+    )
+    return heatmap
+ 
+def mostrar_top_10_provincias(datos, col):
+    # Agrupar por provincia y sumar la cantidad_frac
+    top_provincias = datos.groupby('provincia')['cantidad_frac'].sum().reset_index()
+ 
+    # Ordenar en orden descendente y seleccionar el top 10
+    top_provincias_sorted = top_provincias.sort_values(by='cantidad_frac', ascending=False).head(10)
+ 
+    # Mostrar el top 10 con barras de progreso
+    col.markdown('#### Top 10 Provincias por Cantidad')
+ 
+    col.dataframe(top_provincias_sorted,
+                 hide_index=True,
+                 width=None,
+                 column_config={
+                    "provincia": st.column_config.TextColumn(
+                        "Provincia",
+                    ),
+                    "cantidad_frac": st.column_config.ProgressColumn(
+                        "Cantidad",
+                        format="%f",
+                        min_value=0,
+                        max_value=max(top_provincias_sorted.cantidad_frac),
+                     )}
+                 )
+   
+def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_predicciones):   
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
+    # Verificar que las columnas 'Fecha' sean de tipo datetime
+    if not pd.api.types.is_datetime64_any_dtype(datos_ventas['Fecha']):
+        datos_ventas['Fecha'] = pd.to_datetime(datos_ventas['Fecha'])
+    if not pd.api.types.is_datetime64_any_dtype(datos_abastecimiento['Fecha']):
+        datos_abastecimiento['Fecha'] = pd.to_datetime(datos_abastecimiento['Fecha'])
+    if not pd.api.types.is_datetime64_any_dtype(datos_predicciones['Fecha']):
+        datos_predicciones['Fecha'] = pd.to_datetime(datos_predicciones['Fecha'])
+<<<<<<< HEAD
+    
+    # Filtrar datos para incluir solo el último mes
+    fecha_hoy = pd.to_datetime("today")
+    fecha_inicio = fecha_hoy - pd.DateOffset(days=30)
+    
+    datos_ventas_mes = datos_ventas[(datos_ventas['Fecha'] >= fecha_inicio) & (datos_ventas['Fecha'] <= fecha_hoy)]
+    datos_abastecimiento_mes = datos_abastecimiento[(datos_abastecimiento['Fecha'] >= fecha_inicio) & (datos_abastecimiento['Fecha'] <= fecha_hoy)]
+    
+    # KPI 1: Tasa de Cobertura de Abastecimiento
+    dias_cubiertos = (datos_abastecimiento_mes['cantidad_frac'] >= datos_ventas_mes['cantidad_frac']).sum()
+    tasa_cobertura_abastecimiento = dias_cubiertos / len(datos_ventas_mes) * 100
+    
+    # KPI 2: Tasa de Crecimiento de Ventas
+    ventas_mes_anterior = datos_ventas[(datos_ventas['Fecha'] >= fecha_inicio - pd.DateOffset(days=30)) & 
+                                       (datos_ventas['Fecha'] < fecha_inicio)]['cantidad_frac'].sum()
+    ventas_mes_actual = datos_ventas_mes['cantidad_frac'].sum()
+    tasa_crecimiento_ventas = ((ventas_mes_actual - ventas_mes_anterior) / ventas_mes_anterior) * 100
+    
+    # KPI 3: Promedio de Ventas Diarias
+    promedio_ventas_diarias = datos_ventas_mes['cantidad_frac'].mean()
+    
+    # KPI 4: Promedio de Abastecimientos Diarios
+    promedio_abastecimientos_diarios = datos_abastecimiento_mes['cantidad_frac'].mean()
+    
+    # KPI 5: Desviación Estándar de Ventas
+    desviacion_ventas = datos_ventas_mes['cantidad_frac'].std()
+    
+    # KPI 6: Ratio de Ventas a Abastecimiento
+    ratio_ventas_abastecimiento = ventas_mes_actual / datos_abastecimiento_mes['cantidad_frac'].sum()
+    
+    # Mostrar los KPIs
+    st.write("### KPIs del Último Mes")
+    st.metric("Tasa de Cobertura de Abastecimiento", f"{tasa_cobertura_abastecimiento:.2f}%")
+    st.metric("Tasa de Crecimiento de Ventas", f"{tasa_crecimiento_ventas:.2f}%")
+    st.metric("Promedio de Ventas Diarias", f"{promedio_ventas_diarias:.2f}")
+    st.metric("Promedio de Abastecimientos Diarios", f"{promedio_abastecimientos_diarios:.2f}")
+    st.metric("Desviación Estándar de Ventas", f"{desviacion_ventas:.2f}")
+    st.metric("Ratio de Ventas a Abastecimiento", f"{ratio_ventas_abastecimiento:.2f}")
+    
+    # Aquí se puede incluir el gráfico previamente implementado
+    mostrar_historico_y_predicciones(datos_ventas_mes, datos_abastecimiento_mes, datos_predicciones)
+=======
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
+
+    # Asegurarse de que todos los datasets estén ordenados por fecha
+    datos_ventas = datos_ventas.sort_values(by='Fecha')
+    datos_abastecimiento = datos_abastecimiento.sort_values(by='Fecha')
+    datos_predicciones = datos_predicciones.sort_values(by='Fecha')
+
+    # Crear una serie para las ventas históricas
+    series_ventas = {
+        "name": "Ventas Históricas",
+        "data": datos_ventas['id_item'].tolist(),
+        "type": "line",
+        "smooth": True,
+        "lineStyle": {"width": 2},
+        "areaStyle": {"opacity": 0.2},
+    }
+
+    # Crear una serie para los abastecimientos históricos
+    series_abastecimiento = {
+        "name": "Abastecimientos Históricos",
+        "data": datos_abastecimiento['cantidad_frac'].tolist(),
+        "type": "line",
+        "smooth": True,
+        "lineStyle": {"width": 2, "type": "dashed"},  # Línea discontinua para distinguir del histórico de ventas
+        "areaStyle": {"opacity": 0.2},
+    }
+
+    # Crear una serie para las predicciones de ventas futuras
+    series_predicciones = {
+        "name": "Predicciones Futuras",
+        "data": datos_predicciones['Predicción'].tolist(),
+        "type": "line",
+        "smooth": True,
+        "lineStyle": {"width": 2, "color": "red"},  # Línea roja para destacar las predicciones
+        "areaStyle": {"opacity": 0.2},
+    }
+
+    # Configurar las opciones para el gráfico
+    options = {
+        "title": {
+            "text": "Histórico de Abastecimientos, Ventas y Predicciones Futuras",
+            "left": "center"
+        },
+        "tooltip": {
+            "trigger": "axis"
+        },
+        "legend": {
+            "data": ["Ventas Históricas", "Abastecimientos Históricos", "Predicciones Futuras"],
+            "top": "bottom"
+        },
+        "xAxis": {
+            "type": "category",
+            "data": datos_ventas['Fecha'].dt.strftime('%Y-%m-%d').tolist(),  # Usar las fechas como etiquetas en el eje X
+            "axisLabel": {"rotate": 45}
+        },
+        "yAxis": {"type": "value", "name": "Cantidad"},
+        "series": [series_ventas, series_abastecimiento, series_predicciones],
+        "color": ["#4E79A7", "#59A14F", "red"]
+    }
+    
+    # Renderizar el gráfico con st_echarts
+    st_echarts(options=options, height="500px")
+
+def calcular_kpis_y_mostrar(datos_ventas, datos_abastecimiento, datos_predicciones):
+    import pandas as pd
+    import streamlit as st
+    from streamlit_echarts import st_echarts
+    
     # Verificar que las columnas 'Fecha' sean de tipo datetime
     if not pd.api.types.is_datetime64_any_dtype(datos_ventas['Fecha']):
         datos_ventas['Fecha'] = pd.to_datetime(datos_ventas['Fecha'])
@@ -616,6 +952,7 @@ def calcular_kpis_y_mostrar(datos_ventas, datos_abastecimiento, datos_prediccion
     # Aquí se puede incluir el gráfico previamente implementado
     mostrar_historico_y_predicciones(datos_ventas_mes, datos_abastecimiento_mes, datos_predicciones)
 
+ 
 def main():
     st.title('Predicción de Ventas')
     col1, col2, col3 = st.columns([1.5, 4.5, 2], gap='medium')
@@ -625,7 +962,11 @@ def main():
     uploaded_file = col1.file_uploader("Subir archivo de Ventas CSV", type="csv")
     uploaded_file2 = col1.file_uploader("Subir archivo de Abastecimientos CSV", type="csv")
    
+<<<<<<< HEAD
     if (uploaded_file and uploaded_file2) is not None:
+=======
+    if uploaded_file is not None:
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
         # Barra de progreso
         progress_bar = col1.progress(0)
         for percent_complete in range(100):
@@ -637,6 +978,7 @@ def main():
  
         # Cargar los datos
         datos = pd.read_csv(uploaded_file, delimiter=';')
+<<<<<<< HEAD
         datos2 = datos.copy()
         datos = preparar_datos1(datos)
         abast = pd.read_csv(uploaded_file2, delimiter=';')
@@ -646,10 +988,18 @@ def main():
         
 
 
+=======
+        datos = preparar_datos(datos)
+        abast = pd.read_csv(uploaded_file2, delimiter=';')
+        abast = preparar_datos(abast)
+        #abast = reinterpolar_datos_por_id(abast)
+        datos2 = datos.copy()
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
         #datos = datos.drop(columns=["provincia"])
         datos = datos.groupby(['Fecha', 'id_item'], as_index=False).sum()
         datos = datos.set_index('Fecha')
         datos = reinterpolar_datos_por_id(datos)
+<<<<<<< HEAD
             
     
         abast = abast.groupby(['Fecha', 'id_item'], as_index=False).sum()
@@ -658,13 +1008,28 @@ def main():
 
 
     
+=======
+        
+        print("ABASTECIMIENTO")
+        print(abast.columns)
+        print(abast.tail())
+        #abast = abast.rename(columns={'longitud;;;;':'longitud'})
+        
+        
+        
+        
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
         # Obtener fechas mínima y máxima del dataset
         min_date = datos2['Fecha'].min().to_pydatetime()
         max_date = datos2['Fecha'].max().to_pydatetime()
  
         # Configuración de la barra lateral
         with st.sidebar:
+<<<<<<< HEAD
             ItemsId = datos['id_item'].unique()
+=======
+            ItemsId = datos2['id_item'].unique()
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
             lista = st.multiselect(
                 'Which product would you like to view?',
                 ItemsId,
@@ -680,6 +1045,7 @@ def main():
                 step=timedelta(days=1),
                 format="DD/MM/YYYY"
             )
+<<<<<<< HEAD
 
             
  
@@ -742,9 +1108,48 @@ def main():
             col2.write("Heatmap de Cantidad de Registros por Año y Provincia")
             heatmap = make_heatmap(vent_filtrado, 'Anio', 'provincia', 'cantidad_frac', 'blues')
             col2.altair_chart(heatmap, use_container_width=True)
+=======
+ 
+        # Filtrar los datos por el rango de fechas y los `id_item` seleccionados
+        datos_filtrados = datos2[
+            (datos2['Fecha'] >= selected_date[0]) &
+            (datos2['Fecha'] <= selected_date[1]) &
+            (datos2['id_item'].isin(lista))
+        ]
+ 
+        if datos_filtrados.empty:
+            col1.warning("No hay datos disponibles para los filtros seleccionados.")
+        else:
+            # Generar las predicciones solo para los datos filtrados
+            resultados_futuros = predecir_para_todos_los_items(datos_filtrados, 24, 4)
+            col1.write("Resultados de Predicción:")
+            col1.dataframe(resultados_futuros)
+            print("RESULTADOS FUTUROS!!!!!!!!!!!!!!!!!11")
+            # Supongamos que tienes una Serie o una columna de un DataFrame que se llama 'fecha'
+            resultados_futuros['Fecha'] = pd.to_datetime(resultados_futuros['Fecha'])
+            print(resultados_futuros['Fecha'].dtype)
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
 
 
+            # with col1:
+            #     for id_item in resultados_futuros['id_item'].unique():
+            #         mostrar_ventas_futuras(resultados_futuros, id_item)
+ 
+            # Mostrar la visualización de Pydeck con los datos filtrados
+            pydeck_ecuador_barra(datos_filtrados, col2)
+           
+            # Extraer el año de la columna Fecha
+            datos_filtrados['Anio'] = pd.to_datetime(datos_filtrados['Fecha']).dt.year
+           
+            # Crear y mostrar el heatmap utilizando Altair
+            col2.write("Heatmap de Cantidad de Registros por Año y Provincia")
+            heatmap = make_heatmap(datos_filtrados, 'Anio', 'provincia', 'cantidad_frac', 'blues')
+            col2.altair_chart(heatmap, use_container_width=True)
+            with col2:
+                calcular_kpis_y_mostrar(datos2, abast,resultados_futuros )
+                mostrar_ventas_futuras_todos_items(resultados_futuros)
 
+<<<<<<< HEAD
             with col2:
                 #calcular_kpis_y_mostrar(datos2, abast,resultados_futuros )
                 mostrar_ventas_futuras_todos_items(resultados_futuros)
@@ -770,6 +1175,18 @@ def main():
             
             # Llamar a la función para mostrar el top 10 de provincias
             mostrar_top_10_provincias(vent_filtrado, col3)
+=======
+            mostrar_historico_y_predicciones(datos2, abast, resultados_futuros)
+           
+            # with st.expander('Ventas por día'):
+            #     # Graficar ventas promedio por día para los items seleccionados y dentro del rango de fechas
+            #     for id_item in lista:
+            #         mostrar_ventas_promedio_diarias(datos_filtrados, id_item)
+
+            
+            # Llamar a la función para mostrar el top 10 de provincias
+            mostrar_top_10_provincias(datos_filtrados, col3)
+>>>>>>> 2779d21b0216bb6d016062f65c716c1b6200ba5e
  
 if __name__ == '__main__':
     main()
