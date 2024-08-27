@@ -459,18 +459,7 @@ def mostrar_top_10_provincias(datos, col):
                      )}
                  )
    
-def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_predicciones):   
-
-    
-    print('VENTAS!!')
-    print(datos_ventas.tail())
-
-    print('ABAST!!')
-    print(datos_abastecimiento.tail())
-
-    print('PREDICCIONES!!')
-    print(datos_predicciones)
-    
+def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_predicciones):     
     datos_ventas = datos_ventas.drop(columns=["latitud", "longitud","provincia","id_item"])
     datos_abastecimiento = datos_abastecimiento.drop(columns=["latitud", "longitud","id_item",'provincia'])
     datos_predicciones = datos_predicciones.drop(columns=["Día","id_item"])
@@ -557,9 +546,6 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
     st_echarts(options=options, height="500px")
 
 def calcular_kpis_y_mostrar(datos_ventas, datos_abastecimiento, datos_predicciones):
-    import pandas as pd
-    import streamlit as st
-    from streamlit_echarts import st_echarts
     
     # Verificar que las columnas 'Fecha' sean de tipo datetime
     if not pd.api.types.is_datetime64_any_dtype(datos_ventas['Fecha']):
@@ -610,205 +596,279 @@ def calcular_kpis_y_mostrar(datos_ventas, datos_abastecimiento, datos_prediccion
     # Aquí se puede incluir el gráfico previamente implementado
     mostrar_historico_y_predicciones(datos_ventas_mes, datos_abastecimiento_mes, datos_predicciones)
 
+# Función para calcular totales por semana
+def calcular_totales_semanales(df, columna_valor):
+    df['Semana'] = df['Fecha'].dt.isocalendar().week
+    semana_actual = df['Semana'].max()
+    semana_anterior = semana_actual - 1
+    
+    total_semana_actual = df[df['Semana'] == semana_actual][columna_valor].sum()
+    total_semana_anterior = df[df['Semana'] == semana_anterior][columna_valor].sum()
+    
+    delta = total_semana_actual - total_semana_anterior
+    
+    return total_semana_actual, delta
+
+def make_donut(input_response, input_text, input_color):
+    # Definir colores según la selección
+    if input_color == 'blue':
+        chart_color = ['#29b5e8', '#155F7A']
+    elif input_color == 'green':
+        chart_color = ['#27AE60', '#12783D']
+    elif input_color == 'orange':
+        chart_color = ['#F39C12', '#875A12']
+    elif input_color == 'red':
+        chart_color = ['#E74C3C', '#781F16']
+    else:
+        chart_color = ['#CCCCCC', '#777777']  # Colores por defecto si no se especifica
+
+    # Crear las fuentes de datos para Altair
+    source = pd.DataFrame({
+        "Topic": ['', input_text],
+        "% value": [100-input_response, input_response]
+    })
+
+    source_bg = pd.DataFrame({
+        "Topic": ['', input_text],
+        "% value": [100, 0]
+    })
+
+    # Crear el gráfico de anillo
+    plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=25).encode(
+        theta=alt.Theta("% value:Q"),
+        color=alt.Color("Topic:N",
+                        scale=alt.Scale(
+                            domain=[input_text, ''],
+                            range=chart_color),
+                        legend=None)
+    ).properties(width=130, height=130)
+
+    # Agregar el texto al gráfico
+    text = plot.mark_text(align='center', color=chart_color[0], font="Lato", fontSize=32, fontWeight=700, fontStyle="italic").encode(
+        text=alt.value(f'{input_response:.1f} %')
+    )
+
+    # Gráfico de fondo para crear el efecto de anillo
+    plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
+        theta=alt.Theta("% value:Q"),
+        color=alt.Color("Topic:N",
+                        scale=alt.Scale(
+                            domain=[input_text, ''],
+                            range=chart_color),
+                        legend=None)
+    ).properties(width=130, height=130)
+
+    return plot_bg + plot + text
+
 def main():
-    st.title('Predicción de Ventas')
-    col1, col2, col3 = st.columns([1.5, 4.5, 2], gap='medium')
-   
+    st.markdown("<h1 style='text-align: center;'>DASHBOARD DE INVENTARIO</h1>", unsafe_allow_html=True)
+    col1_1, col2_1 = st.columns([1,1], gap ='medium')
+    
+    uploaded_file = col1_1.file_uploader("Subir archivo de Ventas CSV", type="csv")
+    uploaded_file2 = col2_1.file_uploader("Subir archivo de Abastecimientos CSV", type="csv")
+
     datos = pd.DataFrame()
- 
-    uploaded_file = col1.file_uploader("Subir archivo de Ventas CSV", type="csv")
-    uploaded_file2 = col1.file_uploader("Subir archivo de Abastecimientos CSV", type="csv")
    
     if (uploaded_file and uploaded_file2) is not None:
         # Barra de progreso
-        progress_bar = col1.progress(0)
+        progress_bar = st.progress(0)
         for percent_complete in range(100):
             time.sleep(0.01)  # Simula un pequeño retardo
             progress_bar.progress(percent_complete + 1)
         if(percent_complete == 99):
             # Mostrar mensaje de archivo subido
-            col1.success("Archivos subidos con éxito")
- 
-        # Cargar los datos
-        datos = pd.read_csv(uploaded_file, delimiter=';')
-        datos2 = datos.copy()
-        datos = preparar_datos1(datos)
-        abast = pd.read_csv(uploaded_file2, delimiter=';')
-        abast = preparar_datos(abast)
-        datos2 = preparar_datos(datos2)
-        #abast = reinterpolar_datos_por_id(abast)
+            st.success("Archivos subidos con éxito")
+            with st.container():
+                col1, col2, col3 = st.columns([1.5, 4.5, 2], gap='medium')
+                # Cargar los datos
+                datos = pd.read_csv(uploaded_file, delimiter=';')
+                datos2 = datos.copy()
+                datos = preparar_datos1(datos)
+                abast = pd.read_csv(uploaded_file2, delimiter=';')
+                abast = preparar_datos(abast)
+                datos2 = preparar_datos(datos2)
+                #abast = reinterpolar_datos_por_id(abast)
+                
+
+
+                #datos = datos.drop(columns=["provincia"])
+                datos = datos.groupby(['Fecha', 'id_item'], as_index=False).sum()
+                datos = datos.set_index('Fecha')
+                datos = reinterpolar_datos_por_id(datos)
+                    
+            
+                abast = abast.groupby(['Fecha', 'id_item'], as_index=False).sum()
+                abast = abast.set_index('Fecha')
+                abast = reinterpolar_datos_por_id(abast)
+
+
+            
+                # Obtener fechas mínima y máxima del dataset
+                min_date = datos2['Fecha'].min().to_pydatetime()
+                max_date = datos2['Fecha'].max().to_pydatetime()
         
-
-
-        #datos = datos.drop(columns=["provincia"])
-        datos = datos.groupby(['Fecha', 'id_item'], as_index=False).sum()
-        datos = datos.set_index('Fecha')
-        datos = reinterpolar_datos_por_id(datos)
-            
-    
-        abast = abast.groupby(['Fecha', 'id_item'], as_index=False).sum()
-        abast = abast.set_index('Fecha')
-        abast = reinterpolar_datos_por_id(abast)
-
-
-    
-        # Obtener fechas mínima y máxima del dataset
-        min_date = datos2['Fecha'].min().to_pydatetime()
-        max_date = datos2['Fecha'].max().to_pydatetime()
- 
-        # Configuración de la barra lateral
-        with st.sidebar:
-            ItemsId = datos['id_item'].unique()
-            lista = st.multiselect(
-                'Which product would you like to view?',
-                ItemsId,
-                [90765, 27112, 13887, 79680, 1669, 101609, 54122, 88275]
-            )
- 
-            # Crear un slider para el rango de fechas
-            selected_date = st.slider(
-                "Select a date range",
-                min_value=min_date,
-                max_value=max_date,
-                value=(min_date, max_date),
-                step=timedelta(days=1),
-                format="DD/MM/YYYY"
-            )
-
-            
- 
-        # Filtrar los datos por el rango de fechas y los `id_item` seleccionados
-        vent_filtrado = datos2[
-            (datos2['Fecha'] >= selected_date[0]) &
-            (datos2['Fecha'] <= selected_date[1]) &
-            (datos2['id_item'].isin(lista))     
-
-
-        ]
-
-        # Filtrar los datos de abastecimiento por el rango de fechas y los `id_item`
-        abast_filtrado = abast[
-            (abast['Fecha'] >= selected_date[0]) &
-            (abast['Fecha'] <= selected_date[1]) &
-            (abast['id_item'].isin(lista))     
-        ]
-
-        #Filtrar los datos de predicciones por 'id_item' seleccionados
-        datos_filtradosFut = datos[
-            (datos['id_item'].isin(lista))
-
-        ]
+                # Configuración de la barra lateral
+                with st.sidebar:
+                    ItemsId = datos['id_item'].unique()
+                    lista = st.multiselect(
+                        'Which product would you like to view?',
+                        ItemsId,
+                        [90765, 27112, 13887, 79680, 1669, 101609, 54122, 88275]
+                    )
         
-        vent_filtrado_org = vent_filtrado.copy()
-        abast_filtrado_org = abast_filtrado.copy()
-        datos_filtradosFut_org = datos_filtradosFut.copy()
+                    # Crear un slider para el rango de fechas
+                    selected_date = st.slider(
+                        "Select a date range",
+                        min_value=min_date,
+                        max_value=max_date,
+                        value=(min_date, max_date),
+                        step=timedelta(days=1),
+                        format="DD/MM/YYYY"
+                    )
+
+                    
+                
+                # Filtrar los datos por el rango de fechas y los `id_item` seleccionados
+                vent_filtrado = datos2[
+                    (datos2['Fecha'] >= selected_date[0]) &
+                    (datos2['Fecha'] <= selected_date[1]) &
+                    (datos2['id_item'].isin(lista))     
+                ]
+
+                # Filtrar los datos de abastecimiento por el rango de fechas y los `id_item`
+                abast_filtrado = abast[
+                    (abast['Fecha'] >= selected_date[0]) &
+                    (abast['Fecha'] <= selected_date[1]) &
+                    (abast['id_item'].isin(lista))     
+                ]
+
+                #Filtrar los datos de predicciones por 'id_item' seleccionados
+                datos_filtradosFut = datos[
+                    (datos['id_item'].isin(lista))
+                ]
+                
+                vent_filtrado_org = vent_filtrado.copy()
+                abast_filtrado_org = abast_filtrado.copy()
+                datos_filtradosFut_org = datos_filtradosFut.copy()
+
+                if vent_filtrado.empty:
+                    col1.warning("No hay datos disponibles para los filtros seleccionados.")
+                else:
+                    # Generar las predicciones solo para los datos filtrados
+                    resultados_futuros = predecir_para_todos_los_items(datos_filtradosFut, 24, 4, lista)
+
+                    
+                    # Supongamos que tienes una Serie o una columna de un DataFrame que se llama 'fecha'
+                    #resultados_futuros['Fecha'] = pd.to_datetime(resultados_futuros['Fecha'])
+
+                    # with col1:
+                    #     for id_item in resultados_futuros['id_item'].unique():
+                    #         mostrar_ventas_futuras(resultados_futuros, id_item)
+        
+                    # Mostrar la visualización de Pydeck con los datos filtrados
+                    pydeck_ecuador_barra(vent_filtrado, col2)
+                
+
+                    # Extraer el año de la columna Fecha
+                    
+                
+                    # Crear y mostrar el heatmap utilizando Altair
+                    col2.write("Heatmap de Cantidad de Registros por Año y Provincia")
+                    heatmap = make_heatmap(vent_filtrado, 'Anio', 'provincia', 'cantidad_frac', 'blues')
+                    col2.altair_chart(heatmap, use_container_width=True)
+                    # Llamar a la función para mostrar el top 10 de provincias
+                    mostrar_top_10_provincias(vent_filtrado, col3)
+                    col3.write("Resultados de Predicción:")
+                    col3.dataframe(resultados_futuros)
 
 
-        if vent_filtrado.empty:
-            col1.warning("No hay datos disponibles para los filtros seleccionados.")
-        else:
-            # Generar las predicciones solo para los datos filtrados
-            resultados_futuros = predecir_para_todos_los_items(datos_filtradosFut, 24, 4, lista)
-            col1.write("Resultados de Predicción:")
-            col1.dataframe(resultados_futuros)
+                    with col2:
+                        #calcular_kpis_y_mostrar(datos2, abast,resultados_futuros )
+                        mostrar_ventas_futuras_todos_items(resultados_futuros)
+
+
+                    mostrar_historico_y_predicciones(vent_filtrado_org, abast_filtrado_org, resultados_futuros)
+
+
+                    # KPI 1: Total de Unidades Vendidas
+                    total_ventas, delta_ventas = calcular_totales_semanales(vent_filtrado_org, 'cantidad_frac')
+                    col1.metric(label="Total de Unidades Vendidas", value=total_ventas, delta=int(delta_ventas))
+
+                    # KPI 2: Total de Unidades Abastecidas
+                    total_abast, delta_abast = calcular_totales_semanales(abast_filtrado_org, 'cantidad_frac')
+                    col1.metric(label="Total de Unidades Abastecidas", value=total_abast, delta=int(delta_abast))
+
+                    # KPI 3: Predicciones de Ventas Totales
+                    total_predicciones, delta_predicciones = calcular_totales_semanales(resultados_futuros, 'Predicción')
+                    col1.metric(label="Total de Predicciones de Ventas", value=total_predicciones, delta=int(delta_predicciones))
+
+
+                    # KPI 5: Cobertura de Inventario (días)
+                    promedio_ventas_diarias = total_ventas / vent_filtrado_org['Fecha'].nunique()  # Calcula el promedio de ventas diarias
+                    if promedio_ventas_diarias > 0:
+                        cobertura_inventario = total_abast / promedio_ventas_diarias
+                    else:
+                        cobertura_inventario = 0
+                    col1.metric(label="Cobertura de Inventario (días)", value=f"{cobertura_inventario:.2f}")
+
+                    # Gráfico combinando ventas históricas y predicciones futuras
+                    st.header("Gráfico de Ventas y Predicciones Futuras")
+
+                    # Preparar datos para el gráfico
+                    ventas_para_grafico = vent_filtrado_org.groupby('Fecha')['cantidad_frac'].sum().reset_index()
+                    ventas_para_grafico.rename(columns={'cantidad_frac': 'Ventas'}, inplace=True)
+
+                    # Combinar con las predicciones
+                    predicciones_para_grafico = resultados_futuros[['Fecha', 'Predicción']].rename(columns={'Predicción': 'Ventas'})
+                    ventas_futuras_combinadas = pd.concat([ventas_para_grafico, predicciones_para_grafico], ignore_index=True)
+
+                    # Ordenar por fecha
+                    ventas_futuras_combinadas.sort_values(by='Fecha', inplace=True)
+
+                    # Mostrar el gráfico
+                    st.line_chart(ventas_futuras_combinadas.set_index('Fecha'))
+
+                    if total_predicciones > 0:
+                        tasa_cumplimiento = max(0, min(100, (total_abast / total_predicciones) * 100))
+                    else:
+                        tasa_cumplimiento = 0
+
+                    # Visualizar Donut Chart de Tasa de Cumplimiento
+                    col1.write('Tasa de Cumplimiento de Abastecimiento')
+                    donut_chart = make_donut(tasa_cumplimiento, "Cumplido", "green")
+                    col1.altair_chart(donut_chart)
+
+                    # Cobertura de Inventario (usando valores simulados)
+                    total_ventas = vent_filtrado_org['cantidad_frac'].sum()
+                    promedio_ventas_diarias = total_ventas / vent_filtrado_org['Fecha'].nunique()
+
+                    if promedio_ventas_diarias > 0:
+                        cobertura_inventario = max(0, min(100, (total_abast / promedio_ventas_diarias)))
+                    else:
+                        cobertura_inventario = 0
+
+                    # Visualizar Donut Chart de Cobertura de Inventario
+                    col1.write('Cobertura de Inventario')
+                    donut_chart2 = make_donut(cobertura_inventario, "Cubierto", "blue")
+                    col1.altair_chart(donut_chart2)
+
+
             
-            # Supongamos que tienes una Serie o una columna de un DataFrame que se llama 'fecha'
-            #resultados_futuros['Fecha'] = pd.to_datetime(resultados_futuros['Fecha'])
+                    # Crear el expander
+                    with st.expander('Ventas por día'):
+                        # Aquí puedes agregar el contenido relacionado con las ventas por día
 
-            # with col1:
-            #     for id_item in resultados_futuros['id_item'].unique():
-            #         mostrar_ventas_futuras(resultados_futuros, id_item)
- 
-            # Mostrar la visualización de Pydeck con los datos filtrados
-            pydeck_ecuador_barra(vent_filtrado, col2)
-           
+                        # Agregar información del contacto del creador
+                        st.markdown("**Contactos**")
 
-            # Extraer el año de la columna Fecha
-            
-           
-            # Crear y mostrar el heatmap utilizando Altair
-            col2.write("Heatmap de Cantidad de Registros por Año y Provincia")
-            heatmap = make_heatmap(vent_filtrado, 'Anio', 'provincia', 'cantidad_frac', 'blues')
-            col2.altair_chart(heatmap, use_container_width=True)
+                        # Cargar y mostrar ícono de GitHub
+                        st.image("../icons/github.png", width=24)
+                        st.markdown("[GitHub](https://github.com/JeanVillamar)")
 
-
-
-            with col2:
-                #calcular_kpis_y_mostrar(datos2, abast,resultados_futuros )
-                mostrar_ventas_futuras_todos_items(resultados_futuros)
-
-
-            mostrar_historico_y_predicciones(vent_filtrado_org, abast_filtrado_org, resultados_futuros)
-
-            # KPI 1: Total de Unidades Vendidas
-            total_ventas = vent_filtrado_org['cantidad_frac'].sum()
-            ventas_anteriores = vent_filtrado_org['cantidad_frac'].shift(1).sum()
-            delta_ventas = total_ventas - ventas_anteriores
-            st.metric(label="Total de Unidades Vendidas", value=total_ventas, delta=delta_ventas)
-
-            # KPI 2: Total de Unidades Abastecidas
-            total_abast = abast_filtrado_org['cantidad_frac'].sum()
-            abast_anteriores = abast_filtrado_org['cantidad_frac'].shift(1).sum()
-            delta_abast = total_abast - abast_anteriores
-            st.metric(label="Total de Unidades Abastecidas", value=total_abast, delta=delta_abast)
-
-            # KPI 3: Predicciones de Ventas Totales
-            total_predicciones = resultados_futuros['Predicción'].sum()
-            predicciones_anteriores = resultados_futuros['Predicción'].shift(1).sum()
-            delta_predicciones = total_predicciones - predicciones_anteriores
-            st.metric(label="Total de Predicciones de Ventas", value=total_predicciones, delta=delta_predicciones)
-
-            # KPI 4: Tasa de Cumplimiento de Abastecimiento
-            if total_predicciones > 0:
-                tasa_cumplimiento = (total_abast / total_predicciones) * 100
-            else:
-                tasa_cumplimiento = 0
-            st.metric(label="Tasa de Cumplimiento de Abastecimiento (%)", value=f"{tasa_cumplimiento:.2f}")
-
-            # KPI 5: Cobertura de Inventario (días)
-            promedio_ventas_diarias = total_ventas / vent_filtrado_org['Fecha'].nunique()  # Calcula el promedio de ventas diarias
-            if promedio_ventas_diarias > 0:
-                cobertura_inventario = total_abast / promedio_ventas_diarias
-            else:
-                cobertura_inventario = 0
-            st.metric(label="Cobertura de Inventario (días)", value=f"{cobertura_inventario:.2f}")
-
-            # Gráfico combinando ventas históricas y predicciones futuras
-            st.header("Gráfico de Ventas y Predicciones Futuras")
-
-            # Preparar datos para el gráfico
-            ventas_para_grafico = vent_filtrado_org.groupby('Fecha')['cantidad_frac'].sum().reset_index()
-            ventas_para_grafico.rename(columns={'cantidad_frac': 'Ventas'}, inplace=True)
-
-            # Combinar con las predicciones
-            predicciones_para_grafico = resultados_futuros[['Fecha', 'Predicción']].rename(columns={'Predicción': 'Ventas'})
-            ventas_futuras_combinadas = pd.concat([ventas_para_grafico, predicciones_para_grafico], ignore_index=True)
-
-            # Ordenar por fecha
-            ventas_futuras_combinadas.sort_values(by='Fecha', inplace=True)
-
-            # Mostrar el gráfico
-            st.line_chart(ventas_futuras_combinadas.set_index('Fecha'))
-
-           
-            # Crear el expander
-            with st.expander('Ventas por día'):
-                # Aquí puedes agregar el contenido relacionado con las ventas por día
-
-                # Agregar información del contacto del creador
-                st.markdown("**Contactos**")
-
-                # Cargar y mostrar ícono de GitHub
-                st.image("../icons/github.png", width=24)
-                st.markdown("[GitHub](https://github.com/JeanVillamar)")
-
-                # Cargar y mostrar ícono de LinkedIn
-                st.image("../icons/linkedin.png", width=24)
-                st.markdown("[LinkedIn](www.linkedin.com/in/jean-villamar)")
-                        
-            
-            # Llamar a la función para mostrar el top 10 de provincias
-            mostrar_top_10_provincias(vent_filtrado, col3)
+                        # Cargar y mostrar ícono de LinkedIn
+                        st.image("../icons/linkedin.png", width=24)
+                        st.markdown("[LinkedIn](www.linkedin.com/in/jean-villamar)")
+                                    
  
 if __name__ == '__main__':
     main()
