@@ -88,11 +88,7 @@ def preparar_datos(datos):
  
     # Ordenar el dataset por Fecha
     datos.sort_index(inplace=False)
-    
-    # Imprimir el resultado
-    print('RESULTS!!1')
-    print(result)
- 
+
     return datos
 
 def preparar_datos1(datos):
@@ -464,6 +460,16 @@ def mostrar_top_10_provincias(datos, col):
                  )
    
 def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_predicciones):   
+
+    
+    print('VENTAS!!')
+    print(datos_ventas.tail())
+
+    print('ABAST!!')
+    print(datos_abastecimiento.tail())
+
+    print('PREDICCIONES!!')
+    print(datos_predicciones)
     
     datos_ventas = datos_ventas.drop(columns=["latitud", "longitud","provincia","id_item"])
     datos_abastecimiento = datos_abastecimiento.drop(columns=["latitud", "longitud","id_item",'provincia'])
@@ -475,14 +481,6 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
     datos_abastecimiento = datos_abastecimiento.groupby(['Fecha'], as_index=False).sum()
     datos_predicciones = datos_predicciones.groupby(['Fecha'], as_index=False).sum()
 
-    # print('VENTAS!!')
-    # print(datos_ventas.tail())
-
-    # print('ABAST!!')
-    # print(datos_abastecimiento.tail())
-
-    # print('PREDICCIONES!!')
-    # print(datos_predicciones)
 
 
     # Verificar que las columnas 'Fecha' sean de tipo datetime
@@ -499,8 +497,7 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
     datos_abastecimiento = datos_abastecimiento.sort_values(by='Fecha')
     datos_predicciones = datos_predicciones.sort_values(by='Fecha')
 
-    # print('datos_ventas')
-    # print(datos_ventas.head())
+
 
     # Crear una serie para las ventas históricas
     series_ventas = {
@@ -532,7 +529,6 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
         "areaStyle": {"opacity": 0.2},
     }
 
-    # print('Serie Prodicciones Futuras' + str(series_predicciones))
 
     # Configurar las opciones para el gráfico
     options = {
@@ -707,12 +703,6 @@ def main():
         abast_filtrado_org = abast_filtrado.copy()
         datos_filtradosFut_org = datos_filtradosFut.copy()
 
-        # Filtrar el DataFrame por la fecha específica
-        # fecha_deseada = pd.to_datetime('2024-07-12')
-        # resultado = vent_filtrado_org[vent_filtrado_org['Fecha'] == fecha_deseada]
-
-        # Imprimir el resultado
-        #print(resultado) 
 
         if vent_filtrado.empty:
             col1.warning("No hay datos disponibles para los filtros seleccionados.")
@@ -749,6 +739,57 @@ def main():
 
 
             mostrar_historico_y_predicciones(vent_filtrado_org, abast_filtrado_org, resultados_futuros)
+
+            # KPI 1: Total de Unidades Vendidas
+            total_ventas = vent_filtrado_org['cantidad_frac'].sum()
+            ventas_anteriores = vent_filtrado_org['cantidad_frac'].shift(1).sum()
+            delta_ventas = total_ventas - ventas_anteriores
+            st.metric(label="Total de Unidades Vendidas", value=total_ventas, delta=delta_ventas)
+
+            # KPI 2: Total de Unidades Abastecidas
+            total_abast = abast_filtrado_org['cantidad_frac'].sum()
+            abast_anteriores = abast_filtrado_org['cantidad_frac'].shift(1).sum()
+            delta_abast = total_abast - abast_anteriores
+            st.metric(label="Total de Unidades Abastecidas", value=total_abast, delta=delta_abast)
+
+            # KPI 3: Predicciones de Ventas Totales
+            total_predicciones = resultados_futuros['Predicción'].sum()
+            predicciones_anteriores = resultados_futuros['Predicción'].shift(1).sum()
+            delta_predicciones = total_predicciones - predicciones_anteriores
+            st.metric(label="Total de Predicciones de Ventas", value=total_predicciones, delta=delta_predicciones)
+
+            # KPI 4: Tasa de Cumplimiento de Abastecimiento
+            if total_predicciones > 0:
+                tasa_cumplimiento = (total_abast / total_predicciones) * 100
+            else:
+                tasa_cumplimiento = 0
+            st.metric(label="Tasa de Cumplimiento de Abastecimiento (%)", value=f"{tasa_cumplimiento:.2f}")
+
+            # KPI 5: Cobertura de Inventario (días)
+            promedio_ventas_diarias = total_ventas / vent_filtrado_org['Fecha'].nunique()  # Calcula el promedio de ventas diarias
+            if promedio_ventas_diarias > 0:
+                cobertura_inventario = total_abast / promedio_ventas_diarias
+            else:
+                cobertura_inventario = 0
+            st.metric(label="Cobertura de Inventario (días)", value=f"{cobertura_inventario:.2f}")
+
+            # Gráfico combinando ventas históricas y predicciones futuras
+            st.header("Gráfico de Ventas y Predicciones Futuras")
+
+            # Preparar datos para el gráfico
+            ventas_para_grafico = vent_filtrado_org.groupby('Fecha')['cantidad_frac'].sum().reset_index()
+            ventas_para_grafico.rename(columns={'cantidad_frac': 'Ventas'}, inplace=True)
+
+            # Combinar con las predicciones
+            predicciones_para_grafico = resultados_futuros[['Fecha', 'Predicción']].rename(columns={'Predicción': 'Ventas'})
+            ventas_futuras_combinadas = pd.concat([ventas_para_grafico, predicciones_para_grafico], ignore_index=True)
+
+            # Ordenar por fecha
+            ventas_futuras_combinadas.sort_values(by='Fecha', inplace=True)
+
+            # Mostrar el gráfico
+            st.line_chart(ventas_futuras_combinadas.set_index('Fecha'))
+
            
             # Crear el expander
             with st.expander('Ventas por día'):
