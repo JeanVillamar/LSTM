@@ -246,17 +246,76 @@ def validar_y_actualizar(fila):
         fila["cantidad_frac"] += (multiplicador * int(fila["cantidad_unid"]))
     return fila
 
+
+# Preparar los datos
 def preparar_datos(datos):
+    # Reemplazar '#N/D' con NaN para unificar el manejo de valores faltantes
     datos.replace('#N/D', np.nan, inplace=True)
+    
+    # Seleccionar columnas específicas
     columnas_especificas = ['Fecha', 'id_item', 'cantidad_unid', 'cantidad_frac', 'provincia', 'latitud', 'longitud']
     datos = datos[columnas_especificas]
-    datos = datos.apply(validar_y_actualizar, axis=1).drop(columns=["cantidad_unid"])
-    datos['Fecha'] = pd.to_datetime(datos['Fecha'], format='%d/%m/%Y %H:%M').apply(lambda dt: dt.replace(hour=0, minute=0, second=0))
+ 
+    # Aplicar la función a cada fila
+    datos = datos.apply(validar_y_actualizar, axis=1)
+    datos = datos.drop(columns=["cantidad_unid"])
+   
+    # Convertir la columna Fecha a formato datetime
+    datos['Fecha'] = pd.to_datetime(datos['Fecha'], format='%d/%m/%Y %H:%M')
+    # Establecer la hora y el minuto a 0
+    datos['Fecha'] = datos['Fecha'].apply(lambda dt: dt.replace(hour=0, minute=0, second=0))
+    
+    # Reemplazar NaN en las columnas con valores predeterminados
     datos['provincia'].fillna('Desconocido', inplace=True)
-    datos['latitud'] = datos['latitud'].astype(str).str.replace(',', '.').astype(float)
-    datos['longitud'] = datos['longitud'].astype(str).str.replace(',', '.').astype(float)
+    datos['latitud'].fillna(0, inplace=True)
+    datos['longitud'].fillna(0, inplace=True)
+
+    # Convertir columnas a string y reemplazar comas si necesario, luego convertir a float
+    if datos['latitud'].dtype == 'object':
+        datos['latitud'] = datos['latitud'].str.replace(',', '.').astype(float)
+    else:
+        datos['latitud'] = datos['latitud'].astype(float)
+
+    if datos['longitud'].dtype == 'object':
+        datos['longitud'] = datos['longitud'].str.replace(',', '.').astype(float)
+    else:
+        datos['longitud'] = datos['longitud'].astype(float)
+ 
+    # Agrupar por Fecha, id_item, provincia, latitud y longitud, sumando cantidad_frac
     datos = datos.groupby(['Fecha', 'id_item', 'provincia', 'latitud', 'longitud'], as_index=False).sum()
-    return datos.sort_index(inplace=False)
+    
+    # Filtrar por una fecha y un id_item específicos
+    fecha_deseada = pd.to_datetime('2024-07-12')
+    result = datos[(datos['Fecha'] == fecha_deseada) & (datos['id_item'] == 88275)]
+ 
+    # Ordenar el dataset por Fecha
+    datos.sort_index(inplace=False)
+
+    return datos
+
+def preparar_datos1(datos):
+ 
+    # Seleccionar columnas específicas
+    columnas_especificas = ['Fecha','id_item','cantidad_unid','cantidad_frac','provincia', 'latitud', 'longitud']
+    datos = datos[columnas_especificas]
+ 
+    # Aplicar la función a cada fila
+    datos = datos.apply(validar_y_actualizar, axis=1)
+    datos = datos.drop(columns=["cantidad_unid"])
+   
+    # Convertir la columna Fecha a formato datetime
+    datos['Fecha'] = pd.to_datetime(datos['Fecha'], format='%d/%m/%Y %H:%M')
+    # Establecer la hora y el minuto a 0
+    datos['Fecha'] = datos['Fecha'].apply(lambda dt: dt.replace(hour=0, minute=0, second=0))
+ 
+    # Agrupar por Fecha e id_item y sumar cantidad_frac
+    datos = datos.groupby(['Fecha', 'id_item', 'provincia', 'latitud', 'longitud'], as_index=False).sum()
+ 
+    # Ordenar el dataset por Fecha
+    datos.sort_index(inplace=False)
+    #datos = datos.set_index('Fecha')
+ 
+    return datos
 
 def root_mean_squared_error(y_true, y_pred):
     return tf.math.sqrt(tf.math.reduce_mean(tf.square(y_pred - y_true)))
@@ -465,16 +524,26 @@ def main():
         st.success("Archivos subidos con éxito")
         with st.container():
             col1, col2, col3 = st.columns([1.5, 4.5, 2], gap='medium')
-            datos = cargar_datos_csv(uploaded_file)
-            datos = preparar_datos(datos)
+            # Cargar los datos
+            datos = pd.read_csv(uploaded_file, delimiter=';')
             datos2 = datos.copy()
-            abast = cargar_datos_csv(uploaded_file2)
+            datos = preparar_datos1(datos)
+            abast = pd.read_csv(uploaded_file2, delimiter=';')
             abast = preparar_datos(abast)
+            datos2 = preparar_datos(datos2)
+            #abast = reinterpolar_datos_por_id(abast)
+            
 
-            datos = reinterpolar_datos_por_id(datos.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
-            abast = reinterpolar_datos_por_id(abast.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
 
-            print(datos2.head())
+            #datos = datos.drop(columns=["provincia"])
+            datos = datos.groupby(['Fecha', 'id_item'], as_index=False).sum()
+            datos = datos.set_index('Fecha')
+            datos = reinterpolar_datos_por_id(datos)
+                
+        
+            abast = abast.groupby(['Fecha', 'id_item'], as_index=False).sum()
+            abast = abast.set_index('Fecha')
+            abast = reinterpolar_datos_por_id(abast)
 
             min_date = datos2['Fecha'].min().to_pydatetime()
             max_date = datos2['Fecha'].max().to_pydatetime()
