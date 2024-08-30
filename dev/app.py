@@ -16,7 +16,7 @@ import pydeck as pdk
 import altair as alt
 
 st.set_page_config(
-    page_title="Aplicación FULL AP!",
+    page_title="DASHBOARD",
     page_icon="🤡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -234,18 +234,17 @@ def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
     )
     return heatmap
 
-
 def validar_y_actualizar(fila):
     multiplicadores = {
         13887: 100,  # JERINGA MEGA INSUL 1MLx29Gx1/2x100
         54122: 10,   # XARELTO COM-RECx10MGx10
-        88275: 28    # MICARDIX
+        88275: 28,    # MICARDIX
+        39555: 30
     }
     if fila["cantidad_unid"] >= 1:
         multiplicador = multiplicadores.get(fila['id_item'], 1)
         fila["cantidad_frac"] += (multiplicador * int(fila["cantidad_unid"]))
     return fila
-
 
 # Preparar los datos
 def preparar_datos(datos):
@@ -291,30 +290,6 @@ def preparar_datos(datos):
     # Ordenar el dataset por Fecha
     datos.sort_index(inplace=False)
 
-    return datos
-
-def preparar_datos1(datos):
- 
-    # Seleccionar columnas específicas
-    columnas_especificas = ['Fecha','id_item','cantidad_unid','cantidad_frac','provincia', 'latitud', 'longitud']
-    datos = datos[columnas_especificas]
- 
-    # Aplicar la función a cada fila
-    datos = datos.apply(validar_y_actualizar, axis=1)
-    datos = datos.drop(columns=["cantidad_unid"])
-   
-    # Convertir la columna Fecha a formato datetime
-    datos['Fecha'] = pd.to_datetime(datos['Fecha'], format='%d/%m/%Y %H:%M')
-    # Establecer la hora y el minuto a 0
-    datos['Fecha'] = datos['Fecha'].apply(lambda dt: dt.replace(hour=0, minute=0, second=0))
- 
-    # Agrupar por Fecha e id_item y sumar cantidad_frac
-    datos = datos.groupby(['Fecha', 'id_item', 'provincia', 'latitud', 'longitud'], as_index=False).sum()
- 
-    # Ordenar el dataset por Fecha
-    datos.sort_index(inplace=False)
-    #datos = datos.set_index('Fecha')
- 
     return datos
 
 def root_mean_squared_error(y_true, y_pred):
@@ -461,6 +436,103 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
     st_echarts(options=options, height="500px")
 
 
+def mostrar_historico_y_predicciones2(datos_ventas, datos_abastecimiento, datos_predicciones):   
+    
+    datos_ventas = datos_ventas.drop(columns=["latitud", "longitud","provincia","id_item"])
+    datos_abastecimiento = datos_abastecimiento.drop(columns=["latitud", "longitud","id_item",'provincia'])
+    datos_predicciones = datos_predicciones.drop(columns=["Día","id_item"])
+   
+
+
+    datos_ventas = datos_ventas.groupby(['Fecha'], as_index=False).sum()
+    datos_abastecimiento = datos_abastecimiento.groupby(['Fecha'], as_index=False).sum()
+    datos_predicciones = datos_predicciones.groupby(['Fecha'], as_index=False).sum()
+
+    # print('VENTAS!!')
+    # print(datos_ventas.tail())
+
+    # print('ABAST!!')
+    # print(datos_abastecimiento.tail())
+
+    # print('PREDICCIONES!!')
+    # print(datos_predicciones)
+
+
+    # Verificar que las columnas 'Fecha' sean de tipo datetime
+    # if not pd.api.types.is_datetime64_any_dtype(datos_ventas['Fecha']):
+    datos_ventas['Fecha'] = pd.to_datetime(datos_ventas['Fecha'])
+    # if not pd.api.types.is_datetime64_any_dtype(datos_abastecimiento['Fecha']):
+    datos_abastecimiento['Fecha'] = pd.to_datetime(datos_abastecimiento['Fecha'])
+    # if not pd.api.types.is_datetime64_any_dtype(datos_predicciones['Fecha']):
+    datos_predicciones['Fecha'] = pd.to_datetime(datos_predicciones['Fecha'])
+
+
+    # Asegurarse de que todos los datasets estén ordenados por fecha
+    datos_ventas = datos_ventas.sort_values(by='Fecha')
+    datos_abastecimiento = datos_abastecimiento.sort_values(by='Fecha')
+    datos_predicciones = datos_predicciones.sort_values(by='Fecha')
+
+    # print('datos_ventas')
+    # print(datos_ventas.head())
+
+    # Crear una serie para las ventas históricas
+    series_ventas = {
+        "name": "Ventas Históricas",
+        "data": datos_ventas['cantidad_frac'].tolist(),
+        "type": "line",
+        "smooth": True,
+        "lineStyle": {"width": 2},
+        "areaStyle": {"opacity": 0.2},
+    }
+
+    # Crear una serie para los abastecimientos históricos
+    series_abastecimiento = {
+        "name": "Abastecimientos Históricos",
+        "data": datos_abastecimiento['cantidad_frac'].tolist(),
+        "type": "line",
+        "smooth": True,
+        "lineStyle": {"width": 2, "type": "dashed"},  # Línea discontinua para distinguir del histórico de ventas
+        "areaStyle": {"opacity": 0.2},
+    }
+
+    # Crear una serie para las predicciones de ventas futuras
+    series_predicciones = {
+        "name": "Predicciones Futuras",
+        "data": datos_predicciones['Predicción'].tolist(),
+        "type": "line",
+        "smooth": True,
+        "lineStyle": {"width": 2, "color": "red"},  # Línea roja para destacar las predicciones
+        "areaStyle": {"opacity": 0.2},
+    }
+
+    # print('Serie Prodicciones Futuras' + str(series_predicciones))
+
+    # Configurar las opciones para el gráfico
+    options = {
+        "title": {
+            "text": "Histórico de Abastecimientos, Ventas y Predicciones Futuras",
+            "left": "center"
+        },
+        "tooltip": {
+            "trigger": "axis"
+        },
+        "legend": {
+            "data": ["Ventas Históricas", "Abastecimientos Históricos", "Predicciones Futuras"],
+            "top": "bottom"
+        },
+        "xAxis": {
+            "type": "category",
+            "data": datos_ventas['Fecha'].dt.strftime('%Y-%m-%d').tolist(),  # Usar las fechas como etiquetas en el eje X
+            "axisLabel": {"rotate": 45}
+        },
+        "yAxis": {"type": "value", "name": "Cantidad"},
+        "series": [series_ventas, series_abastecimiento, series_predicciones],
+        "color": ["#4E79A7", "#59A14F", "red"]
+    }
+    
+    # Renderizar el gráfico con st_echarts
+    st_echarts(options=options, height="500px")
+
 
 def pydeck_ecuador_barra(datos2, col, color_theme):
     # Definir el diccionario de colores en formato RGB
@@ -508,6 +580,32 @@ def pydeck_ecuador_barra(datos2, col, color_theme):
     r = pdk.Deck(layers=[column_layer], initial_view_state=view_state)
     col.pydeck_chart(r)
 
+
+def preparar_datos1(datos):
+ 
+    # Seleccionar columnas específicas
+    columnas_especificas = ['Fecha','id_item','cantidad_unid','cantidad_frac','provincia', 'latitud', 'longitud']
+    datos = datos[columnas_especificas]
+ 
+    # Aplicar la función a cada fila
+    datos = datos.apply(validar_y_actualizar, axis=1)
+    datos = datos.drop(columns=["cantidad_unid"])
+   
+    # Convertir la columna Fecha a formato datetime
+    datos['Fecha'] = pd.to_datetime(datos['Fecha'], format='%d/%m/%Y %H:%M')
+    # Establecer la hora y el minuto a 0
+    datos['Fecha'] = datos['Fecha'].apply(lambda dt: dt.replace(hour=0, minute=0, second=0))
+ 
+    # Agrupar por Fecha e id_item y sumar cantidad_frac
+    datos = datos.groupby(['Fecha', 'id_item', 'provincia', 'latitud', 'longitud'], as_index=False).sum()
+ 
+    # Ordenar el dataset por Fecha
+    datos.sort_index(inplace=False)
+    #datos = datos.set_index('Fecha')
+ 
+    return datos
+
+
 def main():
     st.markdown("<h1 style='text-align: center;'>DASHBOARD DE INVENTARIO</h1>", unsafe_allow_html=True)
     col1_1, col2_1 = st.columns([1,1], gap='medium')
@@ -524,26 +622,24 @@ def main():
         st.success("Archivos subidos con éxito")
         with st.container():
             col1, col2, col3 = st.columns([1.5, 4.5, 2], gap='medium')
-            # Cargar los datos
-            datos = pd.read_csv(uploaded_file, delimiter=';')
+            datos = cargar_datos_csv(uploaded_file)
             datos2 = datos.copy()
-            datos = preparar_datos1(datos)
-            abast = pd.read_csv(uploaded_file2, delimiter=';')
-            abast = preparar_datos(abast)
+            print(datos2.head())
             datos2 = preparar_datos(datos2)
-            #abast = reinterpolar_datos_por_id(abast)
+            datos = preparar_datos1(datos)
             
+            abast = cargar_datos_csv(uploaded_file2)
+            abast = preparar_datos(abast)
 
+            # print("ABAST1")
+            # print(abast)
 
-            #datos = datos.drop(columns=["provincia"])
-            datos = datos.groupby(['Fecha', 'id_item'], as_index=False).sum()
-            datos = datos.set_index('Fecha')
-            datos = reinterpolar_datos_por_id(datos)
-                
-        
-            abast = abast.groupby(['Fecha', 'id_item'], as_index=False).sum()
-            abast = abast.set_index('Fecha')
-            abast = reinterpolar_datos_por_id(abast)
+            datos = reinterpolar_datos_por_id(datos.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
+            abast = reinterpolar_datos_por_id(abast.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
+            # print("ABAST2")
+            # print(abast)
+      
+
 
             min_date = datos2['Fecha'].min().to_pydatetime()
             max_date = datos2['Fecha'].max().to_pydatetime()
@@ -591,6 +687,8 @@ def main():
                     mostrar_ventas_futuras_todos_items(resultados_futuros, input_color_theme)
 
                 mostrar_historico_y_predicciones(vent_filtrado_org, abast_filtrado_org, resultados_futuros, input_color_theme)
+
+                #mostrar_historico_y_predicciones2(vent_filtrado_org, abast_filtrado_org, resultados_futuros)
 
                 total_ventas, delta_ventas = calcular_totales_semanales(vent_filtrado_org, 'cantidad_frac')
                 col1.metric(label="Total de Unidades Vendidas", value=total_ventas, delta=int(delta_ventas))
