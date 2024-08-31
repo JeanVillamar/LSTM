@@ -374,25 +374,23 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
     # Crear una lista de fechas para todo el período cubierto por ventas y predicciones
     all_dates = pd.date_range(start=datos_ventas['Fecha'].min(), end=datos_predicciones['Fecha'].max())
 
-    # Crear una serie para las ventas, abastecimientos y predicciones que cubra todas las fechas
-    ventas_series = pd.Series(index=all_dates)
+    # Crear una serie para las ventas (históricas y predicciones) y abastecimientos que cubra todas las fechas
+    ventas_y_predicciones_series = pd.Series(index=all_dates)
     abastecimiento_series = pd.Series(index=all_dates)
-    predicciones_series = pd.Series(index=all_dates)
 
     # Rellenar las series con los datos correspondientes
-    ventas_series[datos_ventas['Fecha']] = datos_ventas['cantidad_frac'].values
+    ventas_y_predicciones_series[datos_ventas['Fecha']] = datos_ventas['cantidad_frac'].values
+    ventas_y_predicciones_series[datos_predicciones['Fecha']] = datos_predicciones['Predicción'].values
     abastecimiento_series[datos_abastecimiento['Fecha']] = datos_abastecimiento['cantidad_frac'].values
-    predicciones_series[datos_predicciones['Fecha']] = datos_predicciones['Predicción'].values
 
     # Convertir NaN a None para JSON (se convertirá a null)
-    series_ventas_data = ventas_series.replace({np.nan: None}).tolist()
+    series_ventas_y_predicciones_data = ventas_y_predicciones_series.replace({np.nan: None}).tolist()
     series_abastecimiento_data = abastecimiento_series.replace({np.nan: None}).tolist()
-    series_predicciones_data = predicciones_series.replace({np.nan: None}).tolist()
 
     # Configurar las series para las líneas del gráfico
-    series_ventas = {
-        "name": "Ventas Históricas",
-        "data": series_ventas_data,
+    series_ventas_y_predicciones = {
+        "name": "Ventas y Predicciones",
+        "data": series_ventas_y_predicciones_data,
         "type": "line",
         "smooth": True,
         "lineStyle": {"width": 2},
@@ -408,26 +406,16 @@ def mostrar_historico_y_predicciones(datos_ventas, datos_abastecimiento, datos_p
         "areaStyle": {"opacity": 0.2},
     }
 
-    series_predicciones = {
-        "name": "Predicciones Futuras",
-        "data": series_predicciones_data,
-        "type": "line",
-        "smooth": True,
-        "lineStyle": {"width": 2},
-        "areaStyle": {"opacity": 0.2},
-    }
-
     # Configurar las opciones para el gráfico
     options = {
         "title": {"text": "Histórico de Abastecimientos, Ventas y Predicciones Futuras", "left": "center"},
         "tooltip": {"trigger": "axis"},
-        "legend": {"data": ["Ventas Históricas", "Abastecimientos Históricos", "Predicciones Futuras"], "top": "bottom"},
+        "legend": {"data": ["Ventas y Predicciones", "Abastecimientos Históricos"], "top": "bottom"},
         "xAxis": {"type": "category", "data": all_dates.strftime('%Y-%m-%d').tolist(), "axisLabel": {"rotate": 45}},
         "yAxis": {"type": "value", "name": "Cantidad"},
         "series": [
-            {**series_ventas, "lineStyle": {"color": color_palette[0]}},
-            {**series_abastecimiento, "lineStyle": {"color": color_palette[1]}},
-            {**series_predicciones, "lineStyle": {"color": color_palette[2]}}
+            {**series_ventas_y_predicciones, "lineStyle": {"color": color_palette[0]}},
+            {**series_abastecimiento, "lineStyle": {"color": color_palette[1]}}
         ],
         "color": color_palette  # Aplicar la paleta de colores seleccionada
     }
