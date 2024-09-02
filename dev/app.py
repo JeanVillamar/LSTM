@@ -590,6 +590,7 @@ def preparar_datos1(datos):
     # Ordenar el dataset por Fecha
     datos.sort_index(inplace=False)
     #datos = datos.set_index('Fecha')
+    datos = reinterpolar_datos_por_id(datos.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
  
     return datos
 
@@ -622,7 +623,6 @@ def main():
             # print("ABAST1")
             # print(abast)
 
-            datos = reinterpolar_datos_por_id(datos.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
             abast = reinterpolar_datos_por_id(abast.groupby(['Fecha', 'id_item'], as_index=False).sum().set_index('Fecha'))
             # print("ABAST2")
             # print(abast)
