@@ -687,7 +687,7 @@ def main():
                 total_predicciones, delta_predicciones = calcular_totales_semanales(resultados_futuros, 'Predicción')
                 col1.metric(label="Total de Predicciones de Ventas", value=total_predicciones, delta=int(delta_predicciones))
 
-                promedio_ventas_diarias = total_ventas / vent_filtrado_org['Fecha'].nunique()
+                promedio_ventas_diarias = total_ventas / A['Fecha'].nunique()
                 cobertura_inventario = total_abast / promedio_ventas_diarias if promedio_ventas_diarias > 0 else 0
                 col1.metric(label="Cobertura de Inventario (días)", value=f"{cobertura_inventario:.2f}")
 
